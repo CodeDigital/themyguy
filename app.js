@@ -1,22 +1,53 @@
+var cooldown = new Date();
+var channelMods = "DigitalDataGame, BOT_MyGuy";
+cooldown.setTime(cooldown.getTime() - 20000);
+//const elc = require('electron');
 var irc = require('irc');
-var elc = require('electron');
+var nick = 'bot_myguy';
+var channel = 'digitaldatagame';
+var oauth = 'oauth:gfvjj6psoe40y89oqz3zew36y00eoo';
 
-var options = {
-    port: 80,
-    debug: true,
-    showErrors: true,
-    autoRejoin: true,
+var client = new irc.Client('irc.chat.twitch.tv', nick, {
     autoConnect: false,
-    channels: ['digitaldatagame'],
-    retryCount: 3,
-    retryDelay: 2000,
-};
+    autoRejoin: true,
+    channels: [('#' + channel)],
+    userName: 'digitaldatagame',
+    retryCount: 5,
+    retryDelay: 2000
+});
 
-var client = new irc.Client('irc.chat.twitch.tv', 'digitaldatagame', options);
+client.addListener('error', function(e) {
+   console.log('ERROR: ' + e.rawCommand);
+});
+
+client.addListener('registered', function(message){
+    console.log(message);
+})
+
+client.addListener('pm', function (from, message) {
+    console.log(from + ' => ME: ' + message);
+});
+
+client.addListener(('message#' + channel), function (from, message) {
+    console.log(from + ' => #yourchannel: ' + message);
+});
+
+client.addListener('motd', function(motd) {
+    console.log(motd);
+})
+
+client.addListener('ping', function(server) {
+    console.log('You\'ve been pinged!');
+});
+
 client.connect();
 
-client.send('PASS','oauth:tvt9fwi4lhlhuqrf6glfjbcj8mzg3r')
-//client.on('raw',function(data){
-     //console.log(data);
-//})
-//console.log(client);
+client.send('PASS', oauth);
+
+client.join(('#' + channel), function () {
+    console.log('Connected to ' + channel);
+});
+
+function gotMessage(from, message){
+    if(message.contains()){}
+}
