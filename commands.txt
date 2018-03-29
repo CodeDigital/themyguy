@@ -1,0 +1,327 @@
+var cooldown = new Date();
+var channelMods = "DigitalDataGame, BOT_MyGuy";
+cooldown.setTime(cooldown.getTime() - 20000);
+var tmi = require('tmi.js');
+
+
+var options = ({
+  options: {
+    debug: true
+  },
+  connection: {
+    cluster: "aws",
+    reconnect: true
+  },
+  identity: {
+    username: "bot_myguy",
+    password: "oauth:s7n0ih2qsll9m23bvsykbaykr154xx"
+  },
+  channels: ["digitaldatagame"]
+});
+
+var client = new tmi.client(options);
+client.connect();
+
+//
+
+client.on('connected', function(address,port) {
+  client.color("HotPink");
+  client.action("digitaldatagame", "Hello World! I am Bot My Guy!");
+});
+
+var isPolling = false;
+var countOptions = 1;
+var pollData = 0;
+var poll = ({
+  'started': false,
+  'name': '',
+  'options': [],
+  'optionsCount': [],
+  'optionsAmt': 0,
+  'length': 0,
+  'winner':'',
+  'voted': []
+});
+
+client.on('chat', function (channel, userstate, message, self) {
+  exports.newMessage = message;
+  if (self) return;
+  var now = new Date()
+  //console.log(userstate['user-type']);
+  //console.log(now.getTime() - cooldown.getTime());
+  if(now.getTime() - cooldown.getTime() >= 15000){
+    if(message.indexOf("!twitter") >= 0) {
+      client.say("digitaldatagame",userstate['display-name'] + "! his Twitter is twitter.com/digitaldatagame");
+      if (!(userstate['display-name'] === "DigitalDataGame")) {
+        cooldown = new Date();
+      }    }
+      else if(message.indexOf("!yt") >= 0) {
+        client.say("digitaldatagame",userstate['display-name'] + "! his YouTube is youtube.com/digitaldatagame");
+        if (!(userstate['display-name'] === "DigitalDataGame")) {
+          cooldown = new Date();
+        }    }
+        else if(message.indexOf("!hello") >= 0) {
+          client.say("digitaldatagame", "Hello World!");
+          if (!(userstate['display-name'] === "DigitalDataGame")) {
+            cooldown = new Date();
+          }    }
+          else if(message.indexOf("!who") >= 0) {
+            client.say("digitaldatagame", "Hey " + userstate['display-name'] + "! I was created by DigitalData. He is my master.");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("@BOT_MyGuy") >= 0) {
+            if (userstate['display-name'] === "DigitalDataGame") {
+              client.say("digitaldatagame", "Hello Master! How has your day been?");
+            }else {
+              client.say("digitaldatagame", "Hey " + userstate['display-name'] + "! I can only understand if my master speaks to me.");
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!ryan") >= 0) {
+            client.say("digitaldatagame", "Currently he is debating the need for capitalism with the communists.");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!matt") >= 0) {
+            client.say("digitaldatagame", "Matt is standing behind you but you cannot see his brilliant disguise (hint: look for nearby trees).");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!dante") >= 0) {
+            client.say("digitaldatagame", "Ocean Man incarnate and our local salt boi.");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!time") >= 0) {
+            var nowTime = new Date();
+            client.say("digitaldatagame", [nowTime.getDate()>9 ? nowTime.getDate() : ("0" + '' + nowTime.getDate())] + "/" + [(nowTime.getMonth() + 1) >9 ? (nowTime.getMonth() + 1) : ("0" + '' + (nowTime.getMonth() + 1))] + "/" + nowTime.getFullYear() + " - " + [nowTime.getHours()>9 ? nowTime.getHours() : ("0" + '' + nowTime.getHours())] + ":" + [nowTime.getMinutes()>9 ? nowTime.getMinutes() : ("0" + '' + nowTime.getMinutes())] + ":" + [nowTime.getSeconds()>9 ? nowTime.getSeconds() : ("0" + '' + nowTime.getSeconds())]);
+            if(nowTime.getHours() === 4 && nowTime.getMinutes() === 20){
+              client.say("digitaldatagame", "TheIlluminati  It's 4:20 Man!!! TheIlluminati ")
+            }
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!illuminati") >= 0) {
+            client.say("digitaldatagame", "I am not permitted to speak about this. TheIlluminati TheIlluminati TheIlluminati ");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!luke") >= 0) {
+            client.say("digitaldatagame", "Just your average everyday genius. The alter ego to !buke");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!buke") >= 0) {
+            client.say("digitaldatagame", "🅱UKE 🅱USSO. 🅱E 🅱RE🅱ARED 🅱OR 🅱IS 🅱RATH");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!anika")>= 0) {
+            client.say("digitaldatagame", "Digital Data's sister who is secretly better than he is at anything. But don't tell him I said that.");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!carter")>= 0) {
+            client.say("digitaldatagame", "Holy kappa. You've done it this time. Hailing from 'Murica is the dude. The real dude.");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!help")>= 0) {
+            client.say("digitaldatagame", "If you want to know what commands you can use, visit CodeDigital.github.io/myguy");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!thx")>= 0) {
+            client.say("digitaldatagame", "Thx Fam This Is Life.");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!specs")>= 0) {
+            client.say("digitaldatagame", "Currently DigitalData is running a GTX 970 (MSI Gaming 4G) with an Intel I7 3770K, 16GB of RAM and a bunch of Hard Drives.");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!gear")>= 0) {
+            client.say("digitaldatagame", " - - - - - - - - Gear List - - - - - - - -  - His mouse is a Logitech G900 Chaos Spectrum. -   - His Keyboard is a Ducky ONE with Cherry MX Greens. -   - His headphones are the Audio Technica ATH-M50X's. -   - Mic: Blue Yeti Pro. - - Mouse Mat: Asus ROG Sheath (The Largest One).");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!endpoll") >= 0) {
+            poll['length'] = 0;
+            isPolling = false;
+            endPoll();
+            client.say("digitaldatagame", "Poll Ended!");
+            if (!(userstate['display-name'] === "DigitalDataGame")) {
+              cooldown = new Date();
+            }
+          }
+          else if(message.indexOf("!poll")>= 0) {
+            if(channelMods.indexOf(userstate['display-name']) >= 0){
+              if(!isPolling && !poll['started']){
+                isPolling = true;
+                pollData = 1;
+                pollMod = userstate['display-name'];
+                client.say("digitaldatagame", "Enter Poll Name");
+              }else{
+                client.say("digitaldatagame", "A poll has already been started. Wait until it ends.")
+              }
+            }else{
+              client.say("digitaldatagame", "You do not have permission to do this...")
+              if (!(userstate['display-name'] === "DigitalDataGame")) {
+                cooldown = new Date();
+              }
+            }
+          }
+          else if(isPolling){
+            if(userstate['display-name'] === pollMod){
+              if (pollData === 1) {
+                poll['name'] = message;
+                console.log(poll['name']);
+                client.say("digitaldatagame", "How many options to this poll?")
+                pollData = 2;
+              }else if(pollData === 2){
+                poll['optionsAmt'] = message;
+                console.log(poll['optionsAmt']);
+                client.say("digitaldatagame", "Enter the " + poll['optionsAmt'] + " Options one by one.");
+                pollData = 3;
+              }else if(pollData === 3){
+                var pollOptions = poll['options'];
+                pollOptions.push(message);
+                poll['optionsCount'].push(0);
+                poll['options'] = pollOptions;
+                poll['optionsAmt'] -= 1;
+                client.say("digitaldatagame", "Option " + countOptions + ": " + message);
+                countOptions += 1;
+                if(poll['optionsAmt'] === 0){
+                  console.log(poll['options']);
+                  client.say("digitaldatagame", "Enter the length (in seconds) of the poll.");
+                  pollData = 4;
+                }
+              }else if(pollData === 4){
+                poll['length'] = message;
+                console.log(poll['length']);
+                client.say("digitaldatagame", "The Poll Has Begun");
+                client.say("digitaldatagame", '"' + poll['name'] + '"');
+                client.say("digitaldatagame", "Enter either the option or the number of the option as shown below:");
+                var optionsArray = poll['options'];
+                for (var i = 0; i < optionsArray.length; i++) {
+                  client.say("digitaldatagame", " " + (i+1) + " - " + optionsArray[i]);
+                }
+                pollData = 0;
+                isPolling = false;
+                poll['started'] = true;
+                startPoll();
+
+              }
+            }
+          }else if(poll['started']){
+            var optionsArray = poll['options'];
+            var addIndex;
+            var inPoll = false;
+            for (var i = 0; i < optionsArray.length; i++) {
+              if(message.indexOf((i+1)) >= 0){
+                addIndex = i;
+                inPoll = true;
+                break;
+              }
+              if(message.indexOf(optionsArray[i]) >= 0){
+                addIndex = i;
+                inPoll = true;
+                break;
+              }
+            }
+
+            if(inPoll){
+              if(!hasVoted(userstate['display-name'])){
+                var optionsCount = poll['optionsCount'];
+                optionsCount[addIndex] += 1;
+                poll['optionsCount'] = optionsCount;
+                poll['voted'].push(userstate['display-name']);
+              }else{
+                client.say("digitaldatagame", userstate['display-name'] + "! You have already Voted, Fam.")
+              }
+            }
+          }
+        }
+      });
+
+      function startPoll(){
+        var counter = 0;
+        var x = setInterval(function(){
+          counter += 1;
+          if(counter === 10){
+            client.say("digitaldatagame", '"' + poll['name'] + '"');
+            client.say("digitaldatagame", "Enter either the option or the number of the option as shown below:");
+            var optionsArray = poll['options'];
+            for (var i = 0; i < optionsArray.length; i++) {
+              client.say("digitaldatagame", " " + (i+1) + " - " + optionsArray[i]);
+            }
+            counter = 0;
+          }
+          if(poll['length'] <= 0){
+            poll['started'] = false;
+            var maxIndex = 0;
+            var optionsCount = poll['optionsCount'];
+            for (var i = 0; i < optionsCount.length; i++) {
+              if(optionsCount[maxIndex] > optionsCount[i]){
+              }else{
+                maxIndex = i;
+              }
+            }
+            var optionsArray = poll['options'];
+            console.log('Winner of the Poll: "' + optionsArray[maxIndex] + '" with ' + optionsCount[maxIndex] + ' Vote(s).');
+            client.say("digitaldatagame", 'Winner of the Poll: "' + optionsArray[maxIndex] + '" with ' + optionsCount[maxIndex] + ' Vote(s).');
+            //alert('Winner of the Poll: "' + optionsArray[maxIndex] + '" with ' + optionsCount[maxIndex] + ' Votes.');
+            poll = ({
+              'started': false,
+              'name': '',
+              'options': [],
+              'optionsCount': [],
+              'optionsAmt': 0,
+              'length': 0,
+              'winner':'',
+              'voted': []
+            });
+            clearInterval(x);
+          }
+          poll['length'] -= 1;
+        }, 1000);
+      }
+
+      function endPoll(){
+        poll = ({
+          'started': false,
+          'name': '',
+          'options': [],
+          'optionsCount': [],
+          'optionsAmt': 0,
+          'length': 0,
+          'winner':'',
+          'voted': []
+        });
+      }
+
+      function hasVoted(name){
+        var peopleVoted = poll['voted'];
+        for (var i = 0; i < peopleVoted.length; i++) {
+          if(peopleVoted[i] === name){
+            return true;
+          }
+        }
+        return false;
+      }
