@@ -14,7 +14,7 @@ var options = ({
   },
   identity: {
     username: "bot_myguy",
-    password: "oauth:s7n0ih2qsll9m23bvsykbaykr154xx"
+    password: "oauth:eqm0rrezh5i7au6o3um4a54fk5ls64"
   },
   channels: ["digitaldatagame"]
 });

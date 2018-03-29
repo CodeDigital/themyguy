@@ -14,11 +14,20 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="600">
-      <file leaf-file-name="app.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="app.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="319">
-              <caret line="44" column="25" selection-start-line="44" selection-start-column="25" selection-end-line="44" selection-end-column="25" />
+            <state relative-caret-position="68">
+              <caret line="4" column="26" lean-forward="true" selection-start-line="4" selection-start-column="26" selection-end-line="4" selection-end-column="26" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="commands.txt" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/commands.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="277">
+              <caret line="96" column="36" lean-forward="true" selection-start-line="96" selection-start-column="36" selection-end-line="96" selection-end-column="36" />
             </state>
           </provider>
         </entry>
@@ -44,6 +53,7 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>motd</find>
+      <find>sChan</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -54,6 +64,7 @@
       <list>
         <option value="$PROJECT_DIR$/viewer.js" />
         <option value="$PROJECT_DIR$/package.json" />
+        <option value="$PROJECT_DIR$/commands.txt" />
         <option value="$PROJECT_DIR$/app.js" />
       </list>
     </option>
@@ -84,24 +95,6 @@
             <path>
               <item name="themyguy" type="b2602c69:ProjectViewProjectNode" />
               <item name="themyguy" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="themyguy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="themyguy" type="462c0819:PsiDirectoryNode" />
-              <item name="node_modules" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="themyguy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="themyguy" type="462c0819:PsiDirectoryNode" />
-              <item name="node_modules" type="462c0819:PsiDirectoryNode" />
-              <item name="irc" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="themyguy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="themyguy" type="462c0819:PsiDirectoryNode" />
-              <item name="node_modules" type="462c0819:PsiDirectoryNode" />
-              <item name="irc" type="462c0819:PsiDirectoryNode" />
-              <item name="lib" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -174,23 +167,22 @@
       <workItem from="1522118564164" duration="2332000" />
       <workItem from="1522278547748" duration="5433000" />
       <workItem from="1522324142040" duration="566000" />
-      <workItem from="1522324896885" duration="7144000" />
+      <workItem from="1522324896885" duration="12411000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="20884000" />
+    <option name="totallyTimeSpent" value="26151000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="885" y="-1" width="1033" height="1058" extended-state="0" />
-    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19798996" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12361809" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="9" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32915717" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32915717" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.3299462" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -272,8 +264,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="44" column="25" selection-start-line="44" selection-start-column="25" selection-end-line="44" selection-end-column="25" />
+        <state relative-caret-position="68">
+          <caret line="4" column="26" lean-forward="true" selection-start-line="4" selection-start-column="26" selection-end-line="4" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/commands.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="277">
+          <caret line="96" column="36" lean-forward="true" selection-start-line="96" selection-start-column="36" selection-end-line="96" selection-end-column="36" />
         </state>
       </provider>
     </entry>
