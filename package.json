@@ -1,0 +1,22 @@
+{
+  "name": "themyguy",
+  "version": "1.0.0",
+  "description": "A Twitch Bot by DigitalData",
+  "main": "app.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "twitch",
+    "bot"
+  ],
+  "author": "Xavier Travers (DigitalData)",
+  "license": "ISC",
+  "dependencies": {
+    "irc": "^0.5.2"
+  },
+  "devDependencies": {
+    "electron": "^1.8.4"
+  }
+}
