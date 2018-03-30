@@ -1,5 +1,64 @@
 var cooldown = new Date();
 var channelMods = "DigitalDataGame, BOT_MyGuy";
+var WebSocket = require('ws');
+var ping = {
+    "type": "PING"
+};
+var pong = {
+    "type": "PONG"
+};
+
+
+var ws = new WebSocket('wss://pubsub-edge.twitch.tv');
+
+ws.on('open', function() {
+    console.log('Connected to WEBSOCKET.');
+    startPinging();
+    ws.send(JSON.stringify({
+        "type": "LISTEN",
+        "data": {
+            "topics": ["whispers.188356345"],
+            "auth_token": "eqm0rrezh5i7au6o3um4a54fk5ls64"
+        }
+    }));
+});
+function startPinging(){
+    setInterval(function(){
+        console.log('Pinged WS Server');
+        ws.send(JSON.stringify(ping));
+    }, (2.5 * 60 * 1000));
+}
+
+ws.on('close', function(code,reason) {
+    console.log('WS Closed Because: ' + reason + '| Code: ' + code);
+});
+
+ws.on('error', function(e) {
+    console.log(e);
+    ws = new WebSocket('wss://pubsub-edge.twitch.tv');
+});
+
+ws.on('message', function(event){
+    var e = JSON.parse(event);
+    //console.log(JSON.parse(event));
+    //console.log(e.data);
+    if(e.data != undefined){
+        //console.log(e.data.message);
+        if(e.data.message != undefined){
+            var datas = JSON.parse(e.data.message);
+            if(datas.data != undefined){
+                var message = JSON.parse(datas.data);
+                //console.log(message.body);
+                var body = message.body;
+                var senderInfo = message.tags;
+                var sender = senderInfo.login;
+                //console.log(message.tags);
+                gotWhisper(sender,body);
+                //console.log('It wasn\'t null');
+            }
+        }
+    }
+});
 
 cooldown.setTime(cooldown.getTime() - 20000);
 //const elc = require('electron');
@@ -12,18 +71,27 @@ var client = new irc.Client('irc.chat.twitch.tv', nick, {
 	autoConnect: false,
 	autoRejoin: true,
 	channels: [('#' + channel)],
-	userName: 'digitaldatagame',
+	userName: nick,
 	retryCount: 5,
 	retryDelay: 2000
 });
 
 client.addListener('error', function(e) {
-   console.log('ERROR: ' + e.rawCommand);
+   console.log('ERROR: ' + e.prefix + " | " + e.nick + " | " + e.user + " | " + e.host + " | " + e.server + " | " + e.rawCommand + " | " + e.command + " | " + e.args);
 });
 
 client.addListener('registered', function(message){
 	console.log(message);
 });
+
+client.addListener('message', function(from, message) {
+    console.log('pm: ' + from + ' - ' + message);
+});
+
+// client.addListener('raw', function(from, message) {
+//     console.log('pm: ' + from + ' - ' + message);
+// });
+
 
 client.addListener(('message#' + channel), function (from, message) {
 	gotMessage(from,message);
@@ -46,6 +114,7 @@ client.join(('#' + channel), function () {
 	console.log('Connected to ' + channel);
 	sayChan('/color hotpink');
 	actChan('Hello Everybody! I\'m here to help. Type !help for commands.');
+	client.send('CAP', 'REQ', ':twitch.tv/commands');
 
 });
 
@@ -71,27 +140,27 @@ function gotMessage(from, message){
     }
 }
 
-// function gotWhisper(from, message){
-//     var now = new Date();
-//     if(now.getTime() - cooldown.getTime() >= 15000){
-//         if(checkMod(from)){
-//             cooldown = new Date();
-//         }
-//         if(checkM(message, '!hello')){
-//             whisper('Hello World!');
-//         }else if(checkM(message, '!twitter')){
-//             whisper('Hi, ' + from + '! His Twitter is  twitter.com/digitaldatagame');
-//         }else if(checkM(message, '!yt') || checkM(message, '!youtube')){
-//             whisper('Hi, ' + from + '! His YouTube is youtube.com/digitaldatagame');
-//         }else if(checkM(message, '!who')){
-//             whisper('I was created by DigitalData. You\'re watching his stream right now!');
-//         }else if(checkM(message, '!website')){
-//             whisper('Hi, ' + from + '! His website is codedigital.github.io');
-//         }else if(checkM(message, '!subtitles')){
-//             whisper('Hi, ' + from + '! DigitalData recently developed a tool allowing streamers to add live working subtitles to their streams. Check it out at codedigital.github.io/TwitchSubtitles');
-//         }
-//     }
-// }
+function gotWhisper(from, message){
+    var now = new Date();
+    if(now.getTime() - cooldown.getTime() >= 15000){
+        if(checkMod(from)){
+            cooldown = new Date();
+        }
+        if(checkM(message, '!hello')){
+            whisper(from, 'Hello World!');
+        }else if(checkM(message, '!twitter')){
+            whisper(from, 'Hi, ' + from + '! His Twitter is  twitter.com/digitaldatagame');
+        }else if(checkM(message, '!yt') || checkM(message, '!youtube')){
+            whisper(from, 'Hi, ' + from + '! His YouTube is youtube.com/digitaldatagame');
+        }else if(checkM(message, '!who')){
+            whisper(from, 'I was created by DigitalData. You\'re watching his stream right now!');
+        }else if(checkM(message, '!website')){
+            whisper(from, 'Hi, ' + from + '! His website is codedigital.github.io');
+        }else if(checkM(message, '!subtitles')){
+            whisper(from, 'Hi, ' + from + '! DigitalData recently developed a tool allowing streamers to add live working subtitles to their streams. Check it out at codedigital.github.io/TwitchSubtitles');
+        }
+    }
+}
 
 function sayChan(message){
 	client.say(('#' + channel), message);
