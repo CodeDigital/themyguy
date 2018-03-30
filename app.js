@@ -1,3 +1,8 @@
+//TODO: Add WebHook integration for follows/other.
+//TODO: Add More Commands.
+//TODO: Create Loadable Application. (Using Electron JS)
+//TODO: Integrate P5JS and P5Game Capabilities for Electron App (Stream Avatar Style).
+
 var cooldown = new Date();
 var channelMods = "DigitalDataGame, BOT_MyGuy";
 var WebSocket = require('ws');
