@@ -2,9 +2,14 @@
 //TODO: Add More Commands.
 //TODO: Create Loadable Application. (Using Electron JS)
 //TODO: Integrate P5JS and P5Game Capabilities for Electron App (Stream Avatar Style).
+var electron = require('electron');
+
+
 
 var cooldown = new Date();
-var channelMods = "DigitalDataGame, BOT_MyGuy";
+var heartbeat;
+var cooldownWhisper = new Date();
+var channelMods = ["digitaldatagame", "bot_myguy"];
 var WebSocket = require('ws');
 var ping = {
     "type": "PING"
@@ -13,64 +18,97 @@ var pong = {
     "type": "PONG"
 };
 
-
-var ws = new WebSocket('wss://pubsub-edge.twitch.tv');
-
-ws.on('open', function() {
-    console.log('Connected to WEBSOCKET.');
-    startPinging();
-    ws.send(JSON.stringify({
-        "type": "LISTEN",
-        "data": {
-            "topics": ["whispers.188356345"],
-            "auth_token": "eqm0rrezh5i7au6o3um4a54fk5ls64"
-        }
-    }));
-});
-function startPinging(){
-    setInterval(function(){
-        console.log('Pinged WS Server');
-        ws.send(JSON.stringify(ping));
-    }, (2.5 * 60 * 1000));
-}
-
-ws.on('close', function(code,reason) {
-    console.log('WS Closed Because: ' + reason + '| Code: ' + code);
+var isPolling = false;
+var pollingMod = '';
+var countOptions = 1;
+var pollData = 0;
+var poll = ({
+    'started': false,
+    'name': '',
+    'options': [],
+    'optionsCount': [],
+    'optionsAmt': 0,
+    'length': 0,
+    'winner':'',
+    'voted': []
 });
 
-ws.on('error', function(e) {
-    console.log(e);
-    ws = new WebSocket('wss://pubsub-edge.twitch.tv');
-});
+var token = "";
+var oauthT = 'oauth:' + token;
 
-ws.on('message', function(event){
-    var e = JSON.parse(event);
-    //console.log(JSON.parse(event));
-    //console.log(e.data);
-    if(e.data != undefined){
-        //console.log(e.data.message);
-        if(e.data.message != undefined){
-            var datas = JSON.parse(e.data.message);
-            if(datas.data != undefined){
-                var message = JSON.parse(datas.data);
-                //console.log(message.body);
-                var body = message.body;
-                var senderInfo = message.tags;
-                var sender = senderInfo.login;
-                //console.log(message.tags);
-                gotWhisper(sender,body);
-                //console.log('It wasn\'t null');
+function startWS(){
+    console.log('Starting WS Connection...')
+    var ws = new WebSocket('wss://pubsub-edge.twitch.tv');
+
+    ws.addEventListener('open', function() {
+        console.log('Connected to WEBSOCKET.');
+        startPinging();
+        ws.send(JSON.stringify({
+            "type": "LISTEN",
+            "data": {
+                "topics": ["whispers.188356345"],
+                "auth_token": token
+            }
+        }));
+    });
+
+    function startPinging(){
+        heartbeat = setInterval(function(){
+            if(ws.readyState == 1){
+                ws.ping(JSON.stringify(ping), true, function(){
+                    console.log('Pinged WS Server');
+                });
+            }
+        }, (60 * 1000));
+    }
+
+    ws.addEventListener('close', function(code,reason) {
+        console.log('WS Closed Because: ' + reason + ' | Code: ' + code.data);
+        clearInterval(heartbeat);
+        startWS();
+    });
+
+    ws.addEventListener('error', function(e) {
+        console.log(e);
+        clearInterval(heartbeat);
+        //startWS();
+    });
+
+    ws.addEventListener('message', function(event){
+        if(event != undefined){
+            //var e = JSON.parse(event);
+            //console.log(JSON.parse(event));
+            //console.log(e.data);
+            //console.log(event);
+            if(event.data != undefined){
+                var edata = JSON.parse(event.data);
+                //console.log(edata.data.message);
+                if(edata.data != undefined){
+                    //console.log(edata.data.message);
+                    var datas = JSON.parse(edata.data.message);
+                    //console.log(datas);
+                    if(datas.data != undefined){
+                        var message = JSON.parse(datas.data);
+                        //console.log(message.body);
+                        var body = message.body;
+                        var senderInfo = message.tags;
+                        var sender = senderInfo.login;
+                        //console.log(message.tags);
+                        gotWhisper(sender,body);
+                        //console.log('It wasn\'t null');
+                    }
+                }
             }
         }
-    }
-});
+    });
+}
 
 cooldown.setTime(cooldown.getTime() - 20000);
-//const elc = require('electron');
+cooldownWhisper.setTime(cooldownWhisper.getTime() - 20000);
 var irc = require('irc');
 var nick = 'bot_myguy';
 var channel = 'digitaldatagame';
-var oauth = 'oauth:eqm0rrezh5i7au6o3um4a54fk5ls64';
+var oauth = oauthT;
 
 var client = new irc.Client('irc.chat.twitch.tv', nick, {
 	autoConnect: false,
@@ -120,14 +158,22 @@ client.join(('#' + channel), function () {
 	sayChan('/color hotpink');
 	actChan('Hello Everybody! I\'m here to help. Type !help for commands.');
 	client.send('CAP', 'REQ', ':twitch.tv/commands');
-
+	sayChan('/host ' + channel);
+    startWS();
 });
 
 function gotMessage(from, message){
     var now = new Date();
     if(now.getTime() - cooldown.getTime() >= 15000){
-        if(checkMod(from)){
+        if(!checkMod(from)){
             cooldown = new Date();
+        }
+        if(checkM(message, '@BOT_MyGuy')){
+            if(checkMod(from)){
+                sayChan('Hello there, Master!');
+            }else{
+                sayChan('Hey! You\'re not my master...');
+            }
         }
         if(checkM(message, '!hello')){
             sayChan('Hello World!');
@@ -141,15 +187,201 @@ function gotMessage(from, message){
             sayChan('Hi, ' + from + '! His website is codedigital.github.io');
         }else if(checkM(message, '!subtitles')){
             sayChan('Hi, ' + from + '! DigitalData recently developed a tool allowing streamers to add live working subtitles to their streams. Check it out at codedigital.github.io/TwitchSubtitles');
+        }else if(checkM(message, '!ryan')){
+            sayChan('Currently he is debating the need for capitalism with the communists.');
+        }else if(checkM(message, '!matt')){
+            sayChan('Matt is standing behind you but you cannot see his brilliant disguise (hint: look for nearby trees).');
+        }else if(checkM(message, '!dante')){
+            sayChan('Ocean Man incarnate and our local salt boi.');
+        }else if(checkM(message, '!time')){
+            var nowTime = new Date();
+            sayChan([nowTime.getDate()>9 ? nowTime.getDate() : ("0" + '' + nowTime.getDate())] + "/" + [(nowTime.getMonth() + 1) >9 ? (nowTime.getMonth() + 1) : ("0" + '' + (nowTime.getMonth() + 1))] + "/" + nowTime.getFullYear() + " - " + [nowTime.getHours()>9 ? nowTime.getHours() : ("0" + '' + nowTime.getHours())] + ":" + [nowTime.getMinutes()>9 ? nowTime.getMinutes() : ("0" + '' + nowTime.getMinutes())] + ":" + [nowTime.getSeconds()>9 ? nowTime.getSeconds() : ("0" + '' + nowTime.getSeconds())]);
+        }else if(checkM(message, '!illuminati')){
+            sayChan('I am not permitted to speak about this. TheIlluminati TheIlluminati TheIlluminati ');
+        }else if(checkM(message, '!luke')){
+            sayChan('Just your average everyday genius. The alter ego to !buke');
+        }else if(checkM(message, '!buke')){
+            sayChan('🅱UKE 🅱USSO. 🅱E 🅱RE🅱ARED 🅱OR 🅱IS 🅱RATH');
+        }else if(checkM(message, '!anika')){
+            sayChan('Digital Data\'s sister who is secretly better than he is at anything. But don\'t tell him I said that.');
+        }else if(checkM(message, '!carter')){
+            sayChan('Holy kappa. You\'ve done it this time. Hailing from \'Murica is the dude. The real dude.');
+        }else if(checkM(message, '!help')){
+            sayChan('If you want to know what commands you can use, visit [WEBSITE LINK]');
+        }else if(checkM(message, '!thx')){
+            sayChan('Thx Fam This Is Life.');
+        }else if(checkM(message, '!specs')){
+            sayChan('Currently DigitalData is running a GTX 970 (MSI Gaming 4G) with an Intel I7 3770K, 16GB of RAM and a bunch of Hard Drives.');
+        }else if(checkM(message, '!gear')){
+            sayChan('Gear List: ' +
+                'His Mouse is a Logitech G900 Chaos Spectrum. ' +
+                'His Keyboard is a Ducky ONE with Cherry MX Greens. ' +
+                'His Headphones are the Audio Technica ATH-M50X\'s. ' +
+                'His Microphone is the Blue Yeti Pro. ' +
+                'His Mouse Mat is the Asus ROG Sheath (The Largest One).');
+        }else if(checkM(message, '!endpoll')){
+            poll['length'] = 0;
+            isPolling = false;
+            endPoll();
+            sayChan('Poll Ended!');
+        }else if(checkM(message, '!poll')){
+            if(checkMod(from)){
+                if(!isPolling && !poll['started']){
+                    isPolling = true;
+                    pollData = 1;
+                    pollingMod = from;
+                    console.log(pollingMod);
+                    sayChan('Enter Poll Name');
+                }else{
+                    sayChan('A poll has already been started. Wait until it ends.');
+                }
+            }else{
+                sayChan('You do not have permission to do this...');
+            }
+        }else if(isPolling){
+            if(from === pollingMod){
+                if (pollData === 1) {
+                    poll['name'] = message;
+                    console.log(poll['name']);
+                    sayChan('How many options to this poll?');
+                    pollData = 2;
+                }else if(pollData === 2){
+                    poll['optionsAmt'] = message;
+                    console.log(poll['optionsAmt']);
+                    sayChan('Enter the ' + poll['optionsAmt'] + ' Options one by one.');
+                    pollData = 3;
+                }else if(pollData === 3){
+                    var pollOptions = poll['options'];
+                    pollOptions.push(message);
+                    poll['optionsCount'].push(0);
+                    poll['options'] = pollOptions;
+                    poll['optionsAmt'] -= 1;
+                    sayChan('Option ' + countOptions + ': ' + message);
+                    countOptions += 1;
+                    if(poll['optionsAmt'] === 0){
+                        console.log(poll['options']);
+                        sayChan('Enter the length (in seconds) of the poll.');
+                        pollData = 4;
+                    }
+                }else if(pollData === 4){
+                    poll['length'] = message;
+                    console.log(poll['length']);
+                    sayChan('The Poll Has Begun');
+                    sayChan('"' + poll['name'] + '"');
+                    sayChan('Enter either the option or the number of the option as shown below:');
+                    var optionsArray = poll['options'];
+                    for (var i = 0; i < optionsArray.length; i++) {
+                        sayChan(' ' + (i+1) + ' - ' + optionsArray[i]);
+                    }
+                    pollData = 0;
+                    isPolling = false;
+                    poll['started'] = true;
+                    startPoll();
+
+                }
+            }
+        }else if(poll['started']){
+            var optionsArray = poll['options'];
+            var addIndex;
+            var inPoll = false;
+            for (var i = 0; i < optionsArray.length; i++) {
+                if(checkM(message, ((i+1) + ''))){
+                    addIndex = i;
+                    inPoll = true;
+                    break;
+                }
+                if(checkM(message, optionsArray[i])){
+                    addIndex = i;
+                    inPoll = true;
+                    break;
+                }
+            }
+            if(inPoll){
+                if(!hasVoted(from)){
+                    var optionsCount = poll['optionsCount'];
+                    optionsCount[addIndex] += 1;
+                    poll['optionsCount'] = optionsCount;
+                    poll['voted'].push(from);
+                }else{
+                    sayChan(from + "! You have already Voted, Fam.")
+                }
+            }
         }
     }
 }
 
+function startPoll(){
+    var counter = 0;
+    var x = setInterval(function(){
+        counter += 1;
+        if(counter === 10){
+            sayChan('Don\'t forget to vote on  the poll "' + poll['name'] + '"!');
+            sayChan('Enter either the option or the number of the option as shown below:');
+            var optionsArray = poll['options'];
+            for (var i = 0; i < optionsArray.length; i++) {
+                sayChan(' ' + (i+1) + ' - ' + optionsArray[i]);
+            }
+            counter = 0;
+        }
+        if(poll['length'] <= 0){
+            poll['started'] = false;
+            var maxIndex = 0;
+            var optionsCount = poll['optionsCount'];
+            for (var i = 0; i < optionsCount.length; i++) {
+                if(optionsCount[maxIndex] > optionsCount[i]){
+                }else{
+                    maxIndex = i;
+                }
+            }
+            var optionsArray = poll['options'];
+            console.log('Winner of the Poll: "' + optionsArray[maxIndex] + '" with ' + optionsCount[maxIndex] + ' Vote(s).');
+            sayChan('Winner of the Poll: "' + optionsArray[maxIndex] + '" with ' + optionsCount[maxIndex] + ' Vote(s).');
+            //alert('Winner of the Poll: "' + optionsArray[maxIndex] + '" with ' + optionsCount[maxIndex] + ' Votes.');
+            poll = ({
+                'started': false,
+                'name': '',
+                'options': [],
+                'optionsCount': [],
+                'optionsAmt': 0,
+                'length': 0,
+                'winner':'',
+                'voted': []
+            });
+            clearInterval(x);
+        }
+        poll['length'] -= 1;
+    }, 5000);
+}
+
+function endPoll(){
+    poll = ({
+        'started': false,
+        'name': '',
+        'options': [],
+        'optionsCount': [],
+        'optionsAmt': 0,
+        'length': 0,
+        'winner':'',
+        'voted': []
+    });
+    pollingMod = '';
+}
+
+function hasVoted(name){
+    var peopleVoted = poll['voted'];
+    for (var i = 0; i < peopleVoted.length; i++) {
+        if(peopleVoted[i] === name){
+            return true;
+        }
+    }
+    return false;
+}
+
 function gotWhisper(from, message){
     var now = new Date();
-    if(now.getTime() - cooldown.getTime() >= 15000){
+    if(now.getTime() - cooldownWhisper.getTime() >= 15000){
         if(checkMod(from)){
-            cooldown = new Date();
+            cooldownWhisper = new Date();
         }
         if(checkM(message, '!hello')){
             whisper(from, 'Hello World!');
@@ -163,6 +395,38 @@ function gotWhisper(from, message){
             whisper(from, 'Hi, ' + from + '! His website is codedigital.github.io');
         }else if(checkM(message, '!subtitles')){
             whisper(from, 'Hi, ' + from + '! DigitalData recently developed a tool allowing streamers to add live working subtitles to their streams. Check it out at codedigital.github.io/TwitchSubtitles');
+        }else if(checkM(message, '!ryan')){
+            whisper(from, 'Currently he is debating the need for capitalism with the communists.');
+        }else if(checkM(message, '!matt')){
+            whisper(from, 'Matt is standing behind you but you cannot see his brilliant disguise (hint: look for nearby trees).');
+        }else if(checkM(message, '!dante')){
+            whisper(from, 'Ocean Man incarnate and our local salt boi.');
+        }else if(checkM(message, '!time')){
+            var nowTime = new Date();
+            whisper(from, [nowTime.getDate()>9 ? nowTime.getDate() : ("0" + '' + nowTime.getDate())] + "/" + [(nowTime.getMonth() + 1) >9 ? (nowTime.getMonth() + 1) : ("0" + '' + (nowTime.getMonth() + 1))] + "/" + nowTime.getFullYear() + " - " + [nowTime.getHours()>9 ? nowTime.getHours() : ("0" + '' + nowTime.getHours())] + ":" + [nowTime.getMinutes()>9 ? nowTime.getMinutes() : ("0" + '' + nowTime.getMinutes())] + ":" + [nowTime.getSeconds()>9 ? nowTime.getSeconds() : ("0" + '' + nowTime.getSeconds())]);
+        }else if(checkM(message, '!illuminati')){
+            whisper(from, 'I am not permitted to speak about this. TheIlluminati TheIlluminati TheIlluminati ');
+        }else if(checkM(message, '!luke')){
+            whisper(from, 'Just your average everyday genius. The alter ego to !buke');
+        }else if(checkM(message, '!buke')){
+            whisper(from, '🅱UKE 🅱USSO. 🅱E 🅱RE🅱ARED 🅱OR 🅱IS 🅱RATH');
+        }else if(checkM(message, '!anika')){
+            whisper(from, 'Digital Data\'s sister who is secretly better than he is at anything. But don\'t tell him I said that.');
+        }else if(checkM(message, '!carter')){
+            whisper(from, 'Holy kappa. You\'ve done it this time. Hailing from \'Murica is the dude. The real dude.');
+        }else if(checkM(message, '!help')){
+            whisper(from, 'If you want to know what commands you can use, visit [WEBSITE LINK]');
+        }else if(checkM(message, '!thx')){
+            whisper(from, 'Thx Fam This Is Life.');
+        }else if(checkM(message, '!specs')){
+            whisper(from, 'Currently DigitalData is running a GTX 970 (MSI Gaming 4G) with an Intel I7 3770K, 16GB of RAM and a bunch of Hard Drives.');
+        }else if(checkM(message, '!gear')){
+            whisper(from, 'Gear List: ' +
+                'His Mouse is a Logitech G900 Chaos Spectrum. ' +
+                'His Keyboard is a Ducky ONE with Cherry MX Greens. ' +
+                'His Headphones are the Audio Technica ATH-M50X\'s. ' +
+                'His Microphone is the Blue Yeti Pro. ' +
+                'His Mouse Mat is the Asus ROG Sheath (The Largest One).');
         }
     }
 }
@@ -185,6 +449,7 @@ function checkM(message, command){
 
 function checkMod(nick){
     for (var i = 0;i<channelMods.length;i = i+1){
+        //console.log(channelMods[i]);
         if(channelMods[i] == nick){
             return true;
         }

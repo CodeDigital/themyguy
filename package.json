@@ -18,6 +18,7 @@
     "irc": "^0.5.2",
     "jquery": "^3.3.1",
     "nodejs-websocket": "^1.7.1",
+    "passport": "^0.4.0",
     "websocket": "^1.0.25",
     "ws": "^5.1.0"
   },
