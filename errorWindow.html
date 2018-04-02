@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <title></title>
+</head>
+<body>
+    <h1 id="title">Getting Error!</h1>
+    <p id="body">There seems to be some issue, but it hasn't arrived yet!</p>
+    <script>
+        const {ipcRenderer} = require('electron');
+        var body = document.getElementById('body');
+        var title = document.getElementById('title');
+
+        ipcRenderer.on('got:error', function (e, item) {
+            console.log('OK')
+            title.innerHTML = item.title;
+            body.innerHTML = item.body;
+        });
+
+    </script>
+</body>
+</html>
