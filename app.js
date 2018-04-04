@@ -4,11 +4,13 @@
 //TODO: Integrate P5JS and P5Game Capabilities for Electron App (Stream Avatar Style).
 
 //Declaring General Info Variables. TODO: Find a way to remove these later.
-var creator = 'digitaldatagame';
-var channelMods = ["digitaldatagame", "bot_myguy", "nightbot"];
-var channel = 'digitaldatagame';
-var token = '';
+var creator = 'digitaldata';
+var channelMods = ["digitaldata", "botmyguy", "nightbot"];
+var channel = 'digitaldata';
+var token = 'd3zbkzsdftx0rq8ncgdo37pkw2380t';
+//var token = '';
 var oauthT = 'oauth:' + token;
+var botID = '188356345';
 
 //Declaring Cooldown Variables.
 var cooldown = new Date();
@@ -17,8 +19,9 @@ cooldown.setTime(cooldown.getTime() - 20000);
 cooldownWhisper.setTime(cooldownWhisper.getTime() - 20000);
 
 //Declaring WebSocket Variables.
+var whisperEvent = 'whispers.' + botID;
 var heartbeat;
-var userEnded;
+var userEnded = false;
 var WebSocket = require('ws');
 var ping = {
     "type": "PING"
@@ -45,8 +48,7 @@ var poll = ({
 
 //Declaring IRC Variables.
 var irc = require('irc');
-var nick = 'bot_myguy';
-var oauth = oauthT;
+var nick = 'botmyguy';
 var annoyed = false;
 var recursive;
 var retryErrorOver;
@@ -66,7 +68,11 @@ let mainWindow;
 //Listen for the app to be ready.
 app.on('ready', function(){
     //Create new window.
-    mainWindow = new BrowserWindow({});
+    mainWindow = new BrowserWindow({
+        titleBarStyle: 'customButtonsOnHover',
+        frame: false,
+        darkTheme: true
+    });
     //Load HTML File into window.
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'main.html'),
@@ -88,7 +94,7 @@ app.on('ready', function(){
 
     //Insert Menu
     Menu.setApplicationMenu(mainMenu);
-})
+});
 
 //Create main Window menu template
 const mainMenuTemplate = [
@@ -112,6 +118,7 @@ const mainMenuTemplate = [
                 accelerator: ('Return'),
                 click(){
                     if (token != '') {
+                        console.log('Connecting!');
                         connect();
                     }else{
                         createErrorWindow('The BOT Couldn\'t Connect','You haven\'t logged in yet! Go through the setup process before continuing.');
@@ -165,9 +172,12 @@ function createErrorWindow(title, message) {
 
     //Create Error Window
     errorWindow = new BrowserWindow({
-        width: 300,
+        titleBarStyle: 'customButtonsOnHover',
+        frame: false,
+        width: 400,
         height: 200,
-        title: 'An Error Occured!'
+        title: 'An Error Occured!',
+        darkTheme: true
     });
 
     //Load Error Window Template
@@ -177,9 +187,10 @@ function createErrorWindow(title, message) {
         slashes: true
     }));
 
-    setTimeout(function(){
+    setTimeout(function () {
+        //console.log('Shown');
         errorWindow.webContents.send('got:error', errorMessage);
-    }, 500);
+    }, 1000);
 
     //Build menu from Template.
     //const errorMenu = Menu.buildFromTemplate(emptyMenuTemplate);
@@ -193,25 +204,18 @@ function createErrorWindow(title, message) {
     });
 }
 
-function disconnect(){
-    client.disconnect(function () {
-        console.log('Disconnected From IRC');
-    });
-    ws.terminate();
-    var userEnded = true;
-    console.log('Disconnected From WS');
-}
-
 function connect() {
-
     function startWS() {
+        var successfulConnection = false;
+        userEnded = false;
         console.log('Starting WS Connection...');
         ws = new WebSocket('wss://pubsub-edge.twitch.tv');
 
         ws.addEventListener('open', function () {
             startPinging();
             retryErrorOver = setTimeout(function () {
-                console.log('Established Stable Connection To WebSocket.')
+                console.log('Established Stable Connection To WebSocket.');
+                successfulConnection = true;
             }, 5000)
             ws.send(JSON.stringify({
                 "type": "LISTEN",
@@ -236,9 +240,12 @@ function connect() {
             console.log('WS Closed Because: ' + reason + ' | Code: ' + code.data);
             clearInterval(heartbeat);
             if(!userEnded){
-            startWS();
+                startWS();
             }else{
-                userEnded = false;
+              successfulConnection = false;
+              //userEnded = false;
+              clearInterval(heartbeat);
+              clearTimeout(retryErrorOver);
             }
         });
 
@@ -246,10 +253,11 @@ function connect() {
             console.log(e);
             clearInterval(heartbeat);
             clearTimeout(retryErrorOver);
-            //startWS();
+            startWS();
         });
 
         ws.addEventListener('message', function (event) {
+            //console.log(event);
             if (event != undefined) {
                 //var e = JSON.parse(event);
                 //console.log(JSON.parse(event));
@@ -257,21 +265,31 @@ function connect() {
                 //console.log(event);
                 if (event.data != undefined) {
                     var edata = JSON.parse(event.data);
-                    //console.log(edata.data.message);
-                    if (edata.data != undefined) {
-                        //console.log(edata.data.message);
-                        var datas = JSON.parse(edata.data.message);
-                        //console.log(datas);
-                        if (datas.data != undefined) {
-                            var message = JSON.parse(datas.data);
-                            //console.log(message.body);
-                            var body = message.body;
-                            var senderInfo = message.tags;
-                            var sender = senderInfo.login;
-                            //console.log(message.tags);
-                            gotWhisper(sender, body);
-                            //console.log('It wasn\'t null');
+                    //console.log(edata);
+                    //Check Type of Message (either RECONNECT or WHISPER
+                    if (edata.type == 'MESSAGE') {
+                        if (edata.data != undefined) {
+                            //console.log(edata.data.message);
+                            if(edata.data.topic = whisperEvent){
+                                var datas = JSON.parse(edata.data.message);
+                                //console.log(datas);
+                                if (datas.data != undefined) {
+                                    var message = JSON.parse(datas.data);
+                                    //console.log(message.body);
+                                    var body = message.body;
+                                    var senderInfo = message.tags;
+                                    var sender = senderInfo.login;
+                                    //console.log(message.tags);
+                                    gotWhisper(sender, body);
+                                    //console.log('It wasn\'t null');
+                                }
+                            }else{
+                                console.log('This is something else...')
+                            }
                         }
+                    }else if(edata.type = 'RECONNECT' && successfulConnection){
+                        //console.log(edata);
+                        startWS();
                     }
                 }
             }
@@ -292,17 +310,12 @@ function connect() {
     });
 
     client.addListener('registered', function (message) {
-        console.log(message);
+        console.log(message.args);
     });
 
     client.addListener('message', function (from, message) {
         console.log('pm: ' + from + ' - ' + message);
     });
-
-// client.addListener('raw', function(from, message) {
-//     console.log('pm: ' + from + ' - ' + message);
-// });
-
 
     client.addListener(('message#' + channel), function (from, message) {
         gotMessage(from, message);
@@ -317,9 +330,11 @@ function connect() {
         console.log('You\'ve been pinged!');
     });
 
-    client.connect();
+    client.connect(10, function () {
+        console.log('IRC Connected!');
+    });
 
-    client.send('PASS', oauth);
+    client.send('PASS', oauthT);
 
     client.join(('#' + channel), function () {
         console.log('Connected to ' + channel);
@@ -327,6 +342,7 @@ function connect() {
         actChan('Hello Everybody! I\'m here to help. Type !help for commands.');
         client.send('CAP', 'REQ', ':twitch.tv/commands');
         sayChan('/host ' + channel);
+        console.log('Trying WS...');
         startWS();
     });
 
@@ -640,4 +656,15 @@ function connect() {
         }
         return false;
     }
+}
+
+function disconnect(){
+    client.disconnect(function () {
+        console.log('Disconnected From IRC');
+    });
+    //var userEnded = true;
+    userEnded = true;
+    ws.terminate();
+    clearTimeout(retryErrorOver);
+    console.log('Disconnected From WS');
 }
