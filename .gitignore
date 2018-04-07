@@ -1,1 +1,2 @@
-#Will ignore IDEA Stuff
+# Will ignore Webstorm .idea Folder.
+.idea
