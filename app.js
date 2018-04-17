@@ -83,7 +83,7 @@ app.on('ready', function(){
 		//Quit Everything when Window Closed.
 		mainWindow.on('closed',function() {
 				app.quit();
-		})
+		});
 
 		mainWindow.on('focus', function () {
 				Menu.setApplicationMenu(mainMenu);
